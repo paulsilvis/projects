@@ -1,6 +1,6 @@
 // doesn't work yet!
 
-#include </home/paul/avr/avr-libc-1.8.0/include/avr/sleep.h>
+#include "sleep.h"
 #include "timestamp.h"
 #include "Wire.h"
 #include "EEPROM.h"
