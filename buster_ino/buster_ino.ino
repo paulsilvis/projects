@@ -12,6 +12,8 @@ const int enablePin = 3;  // the enable switch
 const int interruptPin = 2;
 int sensorValue = 0;  // variable to store the value coming from the sensor
 const int sirenPin = 4;
+const int xxx = 8;
+
 // Convert normal decimal numbers to binary coded decimal
 byte decToBcd(byte val)
 {
@@ -47,6 +49,8 @@ void setup()
    pinMode(sirenPin, OUTPUT);
    pinMode(enablePin, INPUT); 
    pinMode(interruptPin, INPUT); 
+   pinMode(xxx, INPUT);
+   Serial.println("Ready to run");
 }
 
 static void setDS3231time(byte second, byte minute, byte hour, byte dayOfWeek, byte
@@ -177,7 +181,6 @@ void dumpEEPROM()
 
 void impactDetected()
 {
-  testSiren();
   TimeStamp ts;
   size_t N = 10;
   byte * p = (byte*)&ts;
@@ -194,6 +197,7 @@ void impactDetected()
   } else {
     Serial.println("shot record is full");
   }
+    testSiren();
 }
 
 void testSiren()
@@ -214,6 +218,8 @@ void showInputs()
   Serial.println(x);
   
 }
+
+bool continuous = false;
 
 void handleSerialPort()
 {
@@ -245,6 +251,8 @@ void handleSerialPort()
    }
  } else if (ch == 's') {
    Serial.println(analogRead(sensorPin), DEC);
+ } else if (ch == 'S') {
+   continuous = ! continuous;
  } else if (ch == 'e') {
    int sw = digitalRead(enablePin);
    Serial.println(sw, DEC);
@@ -302,15 +310,24 @@ void flashLed(int pin, int onTime, int offTime)
 
 void loop()
 {
+  
   bool enabled = digitalRead(enablePin);
   if (! enabled) {
     flashLed(ledPin, 100, 100);
   };
   
   handleSerialPort();
+  if (continuous) {
+    //sensorValue = analogRead(sensorPin);
+    //Serial.println(sensorValue, DEC);
+    sensorValue = digitalRead(xxx);
+    if (sensorValue) {
+      Serial.println(sensorValue, DEC);
+    }
+  }
   if (enabled) {
-    sensorValue = analogRead(sensorPin); 
-    if (sensorValue > 900) {
+    sensorValue = digitalRead(xxx); //analogRead(sensorPin); 
+    if (sensorValue) { // > 1000) {
       impactDetected();
       Serial.println(sensorValue, DEC);
       delay(500);
@@ -318,13 +335,14 @@ void loop()
   }
   int x;
   x = digitalRead(interruptPin); 
-  if (x == 1) {
+  /*if (x == 1) {
     Serial.println("going to sleep now");
     digitalWrite(ledPin, LOW);
     delay(2000);
      sleepNow();
      Serial.println("awake again!");
   }
+  */
   updateLEDs();
 }
 
